@@ -13,6 +13,8 @@ Tested only with Windows 7, Python 2.7.9 and Rigol DS1104Z (a fully upgraded DS1
 Usage:
 ------
 Install Python 2.7.9 from 'https://www.python.org/downloads'.
+Install 'Python Imaging Library 1.1.7 for Python 2.7' from 'http://www.pythonware.com/products/pil'.
+Run the PIL (Python Imaging Library) installer as Administrator, otherwise it won't work.
 Connect together the computer and the oscilloscope (by LAN).
 In order to capture an image from the oscilloscope display and save it to the computer disk,
 open a Command Prompt as Administrator and run 'OscScreenGrabLAN.py'.
