@@ -15,7 +15,7 @@ Usage:
 Install Python 2.7.9 from 'https://www.python.org/downloads'.
 Connect together the computer and the oscilloscope (by LAN).
 In order to capture an image from the oscilloscope display and save it to the computer disk,
-run 'OscScreenGrabLAN.py'.
+open a Command Prompt as Administrator and run 'OscScreenGrabLAN.py'.
 
 Example:
 
