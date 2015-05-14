@@ -5,7 +5,6 @@ __author__ = 'RoGeorge'
 # TODO: Add GUI
 # TODO: Add browse and custom filename selection
 # TODO: Create executable distributions
-# TODO: Use git, upload to GitHub
 #
 import telnetlib_receive_all
 import time
@@ -113,58 +112,3 @@ print "Saved file:", filename + ".png"
 # scr_file.close()
 
 tn.close()
-
-
-# The code after this line was only for debugging purposes.
-# It prints the BMP header params, which are always the same.
-#
-# def print_hex(prt_buff):
-# 	print "(",
-# 	for c in prt_buff:
-# 		print hex(ord(c)),
-# 	print ")"
-#
-#
-# def print_dec(prt_buff):
-# 	n = 0
-# 	for c in reversed(prt_buff):
-# 		n = 256 * n + ord(c)
-# 	print n,
-#
-#
-# def prt_dec_hex(prt_buff):
-# 	print_dec(prt_buff)
-# 	print_hex(prt_buff)
-#
-#
-# def print_next_as(description, nr_of_bytes):
-# 	print description + " " * (50 - len(description)),
-# 	prt_dec_hex(buff[print_next_as.offset:print_next_as.offset+nr_of_bytes])
-# 	print_next_as.offset += nr_of_bytes
-# print_next_as.offset = 2
-#
-#
-# print
-# print "BMP header"
-# print "----------"
-# print "Header type:                                      ", buff[0:2],
-# print_hex(buff[0:2])
-# print_next_as("BMP size in bytes:", 4)
-# print_next_as("reserved 2 bytes:", 2)
-# print_next_as("reserved 2 bytes:", 2)
-# print_next_as("Offset for BMP start of pixels array:", 4)
-# print
-# print "DIB header"
-# print "----------"
-# print_next_as("Number of DIB header bytes:", 4)
-# print_next_as("Image width (in pixels):", 4)
-# print_next_as("Image height (in pixels):", 4)
-# print_next_as("Number of color planes:", 4)
-# print_next_as("Number of bits per pixel:", 2)
-# print_next_as("Compression type used:", 4)
-# print_next_as("Size of the raw bitmap data (including padding):", 4)
-# print_next_as("Horizontal print resolution (pixels/meter):", 4)
-# print_next_as("Vertical print resolution (pixels/meter):", 4)
-# print_next_as("Number of colors in palette:", 4)
-# print_next_as("Important colors (0 means all):", 4)
-# print_next_as("First pixel (BGR):", 3)
