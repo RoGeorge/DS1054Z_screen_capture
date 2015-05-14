@@ -18,8 +18,19 @@ path_to_save = ""
 save_format = "PNG"
 IP_DS1104Z = "192.168.1.3"
 
-# Port used by Rigol LXI protocol
+# Rigol/LXI specific constants
 port = 5555
+
+expected_len = 1152068
+TMC_header_len = 11
+terminator_len = 3
+
+big_wait = 10
+small_wait = 1
+
+company = 0
+model = 1
+serial = 2
 
 # Check parameters
 script_name = os.path.basename(sys.argv[0])
@@ -73,8 +84,8 @@ if instrument_id == "command error":
 
 # Check if instrument is indeed a Rigol DS1000Z series
 id_fields = instrument_id.split(",")
-if (id_fields[0] != "RIGOL TECHNOLOGIES") or \
-	((id_fields[1][:3] != "DS1") and (id_fields[1][-1] != "Z")):
+if (id_fields[company] != "RIGOL TECHNOLOGIES") or \
+	(id_fields[model][:3] != "DS1") or (id_fields[model][-1] != "Z"):
 	print
 	print "ERROR: No Rigol from series DS1000Z found at ", IP_DS1104Z
 	sys.exit("ERROR")
@@ -84,22 +95,22 @@ print instrument_id
 
 # Prepare filename as C:\MODEL_SERIAL_YYYY-MM-DD_HH.MM.SS
 timestamp = time.strftime("%Y-%m-%d_%H.%M.%S", time.localtime())
-filename = path_to_save + id_fields[1] + "_" + id_fields[2] + "_" + timestamp
+filename = path_to_save + id_fields[model] + "_" + id_fields[serial] + "_" + timestamp
 
 # Ask for an oscilloscope display print screen
 tn.write("display:data?")
 print "Receiving..."
-buff = tn.read_until("\n", 10)
+buff = tn.read_until("\n", big_wait)
 
 # Just in case the transfer did not complete in 10 seconds
-while len(buff) < 1152068:
-	tmp = tn.read_until("\n", 1)
+while len(buff) < expected_len:
+	tmp = tn.read_until("\n", small_wait)
 	if len(tmp) == 0:
 		break
 	buff += tmp
 
-# Strip TMC Blockheader and last 3 bytes
-buff = buff[11:-3]
+# Strip TMC Blockheader and terminator bytes
+buff = buff[TMC_header_len:-terminator_len]
 
 # Save as PNG
 im = Image.open(StringIO.StringIO(buff))
