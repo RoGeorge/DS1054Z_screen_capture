@@ -102,7 +102,7 @@ tn.write("display:data?")
 print "Receiving..."
 buff = tn.read_until("\n", big_wait)
 
-# Just in case the transfer did not complete in 10 seconds
+# Just in case the transfer did not complete in the expected time
 while len(buff) < expected_len:
 	tmp = tn.read_until("\n", small_wait)
 	if len(tmp) == 0:
