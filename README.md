@@ -2,7 +2,7 @@
 'OscScreenGrabLAN.py' is a Python script that captures
 whatever is displayed on the screen of a Rigol DS1000Z series oscilloscope.
 To achieve this, SCPI (Standard Commands for Programmable Instruments) are sent from the computer
-to the oscilloscope, using the LXI (LAN-based eXtensions for Instrumentation) protocol over a Telnet connexion.
+to the oscilloscope, using the LXI (LAN-based eXtensions for Instrumentation) protocol over a Telnet connection.
 The computer and the oscilloscope are connected together by a LAN (Local Area Network).
 No USB (Universal Serial Bus), no VISA (Virtual Instrument Software Architecture),
 no IVI (Interchangeable Virtual Instrument) and no Rigol drivers are required.
