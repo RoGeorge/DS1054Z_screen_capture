@@ -1,6 +1,5 @@
 __author__ = 'RoGeorge'
 #
-# TODO: Port for Linux
 # TODO: Add command line parameters for IP, file path and file format
 # TODO: Add GUI
 # TODO: Add browse and custom filename selection
@@ -12,6 +11,7 @@ import Image
 import StringIO
 import sys
 import os
+import platform
 
 # Update the next lines for your own default settings:
 path_to_save = ""
@@ -38,7 +38,7 @@ script_name = os.path.basename(sys.argv[0])
 # Print usage
 print
 print "Usage:"
-print "    " + script_name + " [oscilloscope_IP [save_path [PNG | BMP]]]"
+print "    " + script_name + " [oscilloscope_IP [save_path [png | bmp]]]"
 print
 print "Usage examples:"
 print "    " + script_name
@@ -61,34 +61,38 @@ print
 
 
 # Check network response (ping)
-response = os.system("ping -n 1 " + IP_DS1104Z + " > nul")
+if platform.system() == "Windows":
+    response = os.system("ping -n 1 " + IP_DS1104Z + " > nul")
+else:
+    response = os.system("ping -c 1 " + IP_DS1104Z + " > /dev/null")
+
 if response != 0:
-	print
-	print "No response pinging " + IP_DS1104Z
-	print "Check network cables and settings."
-	print "You should be able to ping the oscilloscope."
+    print
+    print "No response pinging " + IP_DS1104Z
+    print "Check network cables and settings."
+    print "You should be able to ping the oscilloscope."
 
 # Open a modified telnet session
 # The default telnetlib drops 0x00 characters,
 #   so a modified library 'telnetlib_receive_all' is used instead
 tn = telnetlib_receive_all.Telnet(IP_DS1104Z, port)
-tn.write("*idn?")                       # ask for instrument ID
+tn.write("*idn?")  # ask for instrument ID
 instrument_id = tn.read_until("\n", 1)
 
 # Check if instrument is set to accept LAN commands
 if instrument_id == "command error":
-	print instrument_id
-	print "Check the oscilloscope settings."
-	print "Utility -> IO Setting -> RemoteIO -> LAN must be ON"
-	sys.exit("ERROR")
+    print instrument_id
+    print "Check the oscilloscope settings."
+    print "Utility -> IO Setting -> RemoteIO -> LAN must be ON"
+    sys.exit("ERROR")
 
 # Check if instrument is indeed a Rigol DS1000Z series
 id_fields = instrument_id.split(",")
 if (id_fields[company] != "RIGOL TECHNOLOGIES") or \
-	(id_fields[model][:3] != "DS1") or (id_fields[model][-1] != "Z"):
-	print
-	print "ERROR: No Rigol from series DS1000Z found at ", IP_DS1104Z
-	sys.exit("ERROR")
+        (id_fields[model][:3] != "DS1") or (id_fields[model][-1] != "Z"):
+    print
+    print "ERROR: No Rigol from series DS1000Z found at ", IP_DS1104Z
+    sys.exit("ERROR")
 
 print "Instrument ID:"
 print instrument_id
@@ -104,10 +108,10 @@ buff = tn.read_until("\n", big_wait)
 
 # Just in case the transfer did not complete in the expected time
 while len(buff) < expected_len:
-	tmp = tn.read_until("\n", small_wait)
-	if len(tmp) == 0:
-		break
-	buff += tmp
+    tmp = tn.read_until("\n", small_wait)
+    if len(tmp) == 0:
+        break
+    buff += tmp
 
 # Strip TMC Blockheader and terminator bytes
 buff = buff[TMC_header_len:-terminator_len]
