@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 __author__ = 'RoGeorge'
 #
 # TODO: Add command line parameters for IP, file path and file format
