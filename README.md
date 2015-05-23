@@ -8,10 +8,9 @@ No USB (Universal Serial Bus), no VISA (Virtual Instrument Software Architecture
 no IVI (Interchangeable Virtual Instrument) and no Rigol drivers are required.
 Python 2 is required. Python 3 is not supported.
 
-Tested only with Windows 7, Python 2.7.9 and Rigol DS1104Z (a fully upgraded DS1054Z oscilloscope).
+Tested with Windows 7, Python 2.7.9 and Rigol DS1104Z (a fully upgraded DS1054Z oscilloscope).
 
-Tested in a VMware machine with Linux Debian 7.7.0, Python 2.7.3 and PIL. 
-Python and PIL were already present in the default Debian installation.
+Tested in a VMware machine with Linux Debian 7.7.0, Python 2.7.3 and PIL.
 
 Windows Usage:
 -------------
@@ -28,6 +27,8 @@ Example:
     
 Linux Usage:
 -----------
+Python and PIL are already present in the default Debian 7.7.0 installation, 
+so it is not necessary to manually install them.
 Download the project from GitHub, open a Terminal, 
 go to the project's directory and run "OscScreenGrabLAN.py". 
 
