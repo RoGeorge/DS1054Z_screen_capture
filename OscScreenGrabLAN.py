@@ -1,6 +1,7 @@
 __author__ = 'RoGeorge'
 #
 # TODO: Add command line parameters for IP, file path and file format
+# TODO: Add data capture/export capabilities
 # TODO: Add GUI
 # TODO: Add browse and custom filename selection
 # TODO: Create executable distributions
