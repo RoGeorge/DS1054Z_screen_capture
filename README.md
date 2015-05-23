@@ -29,7 +29,7 @@ Linux Usage:
 -----------
 Python and PIL are already present in the default Debian 7.7.0 installation, 
 so it is not necessary to manually install them.
-Download the project from GitHub, open a Terminal, 
+Connect together the computer and the oscilloscope (by LAN), download the project from GitHub, open a Terminal, 
 go to the project's directory and run "OscScreenGrabLAN.py". 
 
 Example:
