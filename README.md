@@ -10,8 +10,11 @@ Python 2 is required. Python 3 is not supported.
 
 Tested only with Windows 7, Python 2.7.9 and Rigol DS1104Z (a fully upgraded DS1054Z oscilloscope).
 
-Usage:
-------
+Tested in a VMware machine with Linux Debian 7.7.0, Python 2.7.3 and PIL. 
+Python and PIL were already present in the default Debian installation.
+
+Windows Usage:
+-------------
 Install Python 2.7.9 from https://www.python.org/downloads.
 Install "Python Imaging Library 1.1.7 for Python 2.7" from http://www.pythonware.com/products/pil.
 Run the PIL (Python Imaging Library) installer as Administrator, otherwise it won't be installed properly.
@@ -23,4 +26,12 @@ Example:
 
     C:\Python27\python.exe OscScreenGrabLAN.py
     
+Linux Usage:
+-----------
+Download the project from GitHub, open a Terminal, 
+go to the project's directory and run "OscScreenGrabLAN.py". 
+
+Example:
+
+    python OscScreenGrabLAN.py
     
