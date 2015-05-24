@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 __author__ = 'RoGeorge'
 #
-# TODO: Add command line parameters for IP, file path and file format
-# TODO: Add data capture/export capabilities
+# TODO: Add command line parameters file path
 # TODO: Add GUI
 # TODO: Add browse and custom filename selection
 # TODO: Create executable distributions
@@ -37,30 +36,43 @@ serial = 2
 # Check parameters
 script_name = os.path.basename(sys.argv[0])
 
-# Print usage
-print
-print "Usage:"
-print "    " + script_name + " [oscilloscope_IP [save_path [png | bmp]]]"
-print
-print "Usage examples:"
-print "    " + script_name
-print "    " + script_name + " 192.168.1.3"
-print "    " + script_name + " 192.168.1.3 my_place_for_osc_captures"
-print "    " + script_name + " 192.168.1.3 my_place_for_osc_captures BMP"
-print
-print "This program capture the image displayed"
-print "    by a Rigol DS1000Z series oscilloscope, then save it on the computer"
-print "    as a PNG or BMP file with a timestamp in the file name."
-print
-print "    The program is using LXI protocol, so the computer"
-print "    must have LAN connection with the oscilloscope."
-print "    USB and/or GPIB connections are not used by this software."
-print
-print "    No VISA, IVI or Rigol drivers are needed."
-print
+
+def print_help():
+    # Print usage
+    print
+    print "Usage:"
+    print "    " + script_name + " png|bmp|csv [oscilloscope_IP [save_path]]"
+    print
+    print "Usage examples:"
+    print "    " + script_name + " png"
+    print
+    print "The following usage cases are not yet implemented:"
+    print "    " + script_name + " csv 192.168.1.3"
+    print "    " + script_name + " bmp 192.168.1.3 my_place_for_osc_bmp_captures"
+    print
+    print "This program captures either the waveform or the whole screen"
+    print "    of a Rigol DS1000Z series oscilloscope, then save it on the computer"
+    print "    as a CSV, PNG or BMP file with a timestamp in the file name."
+    print
+    print "    The program is using LXI protocol, so the computer"
+    print "    must have LAN connection with the oscilloscope."
+    print "    USB and/or GPIB connections are not used by this software."
+    print
+    print "    No VISA, IVI or Rigol drivers are needed."
+    print
+
+
+if len(sys.argv) <= 1:
+    print_help()
+    sys.exit("Warning - wrong command line parameters.")
+elif sys.argv[1].lower() not in ["png", "bmp", "csv"]:
+    print_help()
+    print "This file type is not supported: ", sys.argv[1]
+    sys.exit("ERROR")
+
+file_format = sys.argv[1].lower()
 
 # Create/check if 'path' exists
-
 
 # Check network response (ping)
 if platform.system() == "Windows":
@@ -103,29 +115,122 @@ print instrument_id
 timestamp = time.strftime("%Y-%m-%d_%H.%M.%S", time.localtime())
 filename = path_to_save + id_fields[model] + "_" + id_fields[serial] + "_" + timestamp
 
-# Ask for an oscilloscope display print screen
-tn.write("display:data?")
-print "Receiving..."
-buff = tn.read_until("\n", big_wait)
+if file_format in ["png", "bmp"]:
+    # Ask for an oscilloscope display print screen
+    tn.write("display:data?")
+    print "Receiving..."
+    buff = tn.read_until("\n", big_wait)
 
-# Just in case the transfer did not complete in the expected time
-while len(buff) < expected_len:
-    tmp = tn.read_until("\n", small_wait)
-    if len(tmp) == 0:
-        break
-    buff += tmp
+    # Just in case the transfer did not complete in the expected time
+    while len(buff) < expected_len:
+        tmp = tn.read_until("\n", small_wait)
+        if len(tmp) == 0:
+            break
+        buff += tmp
 
-# Strip TMC Blockheader and terminator bytes
-buff = buff[TMC_header_len:-terminator_len]
+    # Strip TMC Blockheader and terminator bytes
+    buff = buff[TMC_header_len:-terminator_len]
 
-# Save as PNG
-im = Image.open(StringIO.StringIO(buff))
-im.save(filename + ".png", "PNG")
-print "Saved file:", filename + ".png"
+    # Save as PNG or BMP according to file_format
+    im = Image.open(StringIO.StringIO(buff))
+    im.save(filename + "." + file_format, file_format)
+    print "Saved file:", filename + "." + file_format
 
-# Save as BMP
-# scr_file = open(filename + ".bmp", "wb")
-# scr_file.write(buff)
-# scr_file.close()
+elif file_format == "csv":
+    print "csv mode"
+    # Put osc in STOP mode
+    # tn.write("stop")
+    # response = tn.read_until("\n", 1)
+
+    # Scan for displayed channels
+    channel_list = []
+    for channel in ["chan1", "chan2", "chan3", "chan4", "math"]:
+        tn.write(channel + ":display?")
+        response = tn.read_until("\n", 1)
+        # Strip '\n' terminator
+        response = response[:-1]
+        if response == '1':
+            channel_list += [channel]
+
+    print channel_list
+
+    csv_buff = ""
+
+    # for each active channel
+    for channel in channel_list:
+        # Read WAVE parameters
+
+        # Set WAVE parameters
+        tn.write("waveform:source " + channel)
+        response = tn.read_until("\n", 1)
+
+        # Maximum - only displayed data when osc. in RUN mode, or full memory data when STOPed
+        tn.write("waveform:mode maximum")
+        response = tn.read_until("\n", 1)
+
+        tn.write("waveform:format ASCII")
+        response = tn.read_until("\n", 1)
+
+        # Get data
+        tn.write("waveform:data?")
+
+        print "Receiving..."
+        buff = tn.read_until("\n", big_wait)
+
+        # Just in case the transfer did not complete in the expected time
+        while buff[-1] != "\n":
+            tmp = tn.read_until("\n", small_wait)
+            if len(tmp) == 0:
+                break
+            buff += tmp
+
+        # Append each value to csv_buff
+
+        # Strip headers (TMC and points number)
+        TMC_header = buff[:TMC_header_len]
+        data_points = float(TMC_header[2:])
+        # Strip TMC Blockheader and terminator bytes
+        buff = buff[TMC_header_len:-1]
+
+        # Process data
+        print buff
+        print
+        print "data_points =", data_points, "from", channel
+
+        buff_list = buff.split(",")
+        buff_rows = len(buff_list)
+
+        print buff_list
+
+        # Put red data into csv_buff
+        csv_buff_list = csv_buff.split(os.linesep)
+        csv_rows = len(csv_buff_list)
+
+        current_row = 0
+        if csv_buff == "":
+            csv_first_column = True
+            csv_buff = str(channel) + os.linesep
+        else:
+            csv_first_column = False
+            csv_buff = str(csv_buff_list[current_row]) + "," + str(channel) + os.linesep
+
+        for point in buff_list:
+            current_row += 1
+            if csv_first_column:
+                csv_buff += str(point) + os.linesep
+            else:
+                if current_row < csv_rows:
+                    csv_buff += str(csv_buff_list[current_row]) + "," + str(point) + os.linesep
+                else:
+                    csv_buff += "," + str(point) + os.linesep
+
+        print csv_buff
+
+    # Save data as CSV
+    scr_file = open(filename + "." + file_format, "wb")
+    scr_file.write(csv_buff)
+    scr_file.close()
+
+    print "Saved file:", filename + "." + file_format
 
 tn.close()
