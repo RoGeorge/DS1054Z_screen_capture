@@ -1,14 +1,22 @@
 #!/usr/bin/env python
 __author__ = 'RoGeorge'
 #
+"""
+# TODO: Use "waveform:data?" multiple times to extract the whole 12M points
+          in order to overcome the "Memory lack in waveform reading!" screen message
+"""
+# TODO: Detect if the osc is in RUN or in STOP mode (looking at the length of data extracted)
+# TODO: Investigate scaling. Sometimes 3.0e-008 instead of expected 3.0e-000
 # TODO: Add timestamp and mark the trigger point as t0
 # TODO: Use channels label instead of chan1, chan2, chan3, chan4, math
 # TODO: Add command line parameters file path
+# TODO: Speed-up the transfer, try to replace Telnet with direct TCP
 # TODO: Add GUI
 # TODO: Add browse and custom filename selection
 # TODO: Create executable distributions
 #
-import telnetlib_receive_all
+from telnetlib_receive_all import Telnet
+from Rigol_functions import *
 import time
 import Image
 import StringIO
@@ -95,7 +103,7 @@ if response != 0:
 # Open a modified telnet session
 # The default telnetlib drops 0x00 characters,
 #   so a modified library 'telnetlib_receive_all' is used instead
-tn = telnetlib_receive_all.Telnet(IP_DS1104Z, port)
+tn = Telnet(IP_DS1104Z, port)
 tn.write("*idn?")  # ask for instrument ID
 instrument_id = tn.read_until("\n", 1)
 
@@ -161,42 +169,76 @@ elif file_format == "csv":
     print "Active channels on the display:", channel_list
 
     csv_buff = ""
+    depth = get_memory_depth(tn)
 
     # for each active channel
     for channel in channel_list:
-        # Read WAVE parameters
+        print
 
         # Set WAVE parameters
         tn.write("waveform:source " + channel)
         time.sleep(0.2)
 
+        tn.write("waveform:form asc")
+        time.sleep(0.2)
+
         # Maximum - only displayed data when osc. in RUN mode, or full memory data when STOPed
-        tn.write("waveform:mode normal")
+        tn.write("waveform:mode max")
         time.sleep(0.2)
 
-        tn.write("waveform:format ASCII")
-        time.sleep(0.2)
+        # Get all possible data
+        buff = ""
+        data_available = True
 
-        # Get data
-        tn.write("waveform:data?")
+        # max_chunk is dependent of the wav:mode and the oscilloscope type
+        # if you get on the oscilloscope screen the error message
+        # "Memory lack in waveform reading!", then decrease max_chunk value
+        max_chunk = 100000.0  # tested for DS1104Z
+        if max_chunk > depth:
+            max_chunk = depth
 
-        print "Receiving data for channel " + str(channel) + "..."
-        buff = tn.read_until("\n", big_wait)
+        n1 = 1.0
+        n2 = max_chunk
+        data_available = True
 
-        # Just in case the transfer did not complete in the expected time
-        while buff[-1] != "\n":
-            tmp = tn.read_until("\n", small_wait)
-            if len(tmp) == 0:
+        while data_available:
+            display_n1 = n1
+            stop_point = is_waveform_from_to(tn, n1, n2)
+            if stop_point == 0:
+                data_available = False
+                print "ERROR: Stop data point index lower then start data point index"
+                sys.exit("ERROR")
+            elif stop_point < n1:
                 break
-            buff += tmp
+            elif stop_point < n2:
+                n2 = stop_point
+                is_waveform_from_to(tn, n1, n2)
+                data_available = False
+            else:
+                data_available = True
+                n1 = n2 + 1
+                n2 += max_chunk
+
+            tn.write("waveform:data?")
+
+            print "Data from channel " + str(channel) + ", points " +\
+                  str(int(display_n1)) + "-" + str(int(stop_point)) + ": Receiving..."
+            buff_chunks = tn.read_until("\n", big_wait)
+
+            # Just in case the transfer did not complete in the expected time
+            while buff_chunks[-1] != "\n":
+                tmp = tn.read_until("\n", small_wait)
+                if len(tmp) == 0:
+                    break
+                buff_chunks += tmp
+
+            # Append data chunks
+            # Strip TMC Blockheader and terminator bytes
+            buff += buff_chunks[TMC_header_len:-1] + ","
+
+        buff = buff[:-1]
 
         # Append each value to csv_buff
-
-        # Strip headers (TMC and points number)
-        TMC_header = buff[:TMC_header_len]
-        data_points = float(TMC_header[2:])
-        # Strip TMC Blockheader and terminator bytes
-        buff = buff[TMC_header_len:-1]
 
         # Process data
 
