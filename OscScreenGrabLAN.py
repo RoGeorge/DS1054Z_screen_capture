@@ -18,7 +18,7 @@ __author__ = 'RoGeorge'
 from telnetlib_receive_all import Telnet
 from Rigol_functions import *
 import time
-import Image
+from PIL import Image
 import StringIO
 import sys
 import os
@@ -177,14 +177,14 @@ elif file_format == "csv":
 
         # Set WAVE parameters
         tn.write("waveform:source " + channel)
-        time.sleep(0.2)
+        time.sleep(1)
 
         tn.write("waveform:form asc")
-        time.sleep(0.2)
+        time.sleep(1)
 
         # Maximum - only displayed data when osc. in RUN mode, or full memory data when STOPed
         tn.write("waveform:mode max")
-        time.sleep(0.2)
+        time.sleep(1)
 
         # Get all possible data
         buff = ""

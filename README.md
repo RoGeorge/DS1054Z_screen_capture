@@ -12,26 +12,12 @@ No USB (Universal Serial Bus), no VISA (Virtual Instrument Software Architecture
 no IVI (Interchangeable Virtual Instrument) and no Rigol drivers are required.
 Python 2 is required. Python 3 is not supported.
 
-Tested with Windows 7, Python 2.7.9 and Rigol DS1104Z (a fully upgraded DS1054Z oscilloscope).
-
-Tested in a VMware machine with Linux Debian 7.7.0, Python 2.7.3 and PIL.
+Tested with Windows 10, Python 2.7.12, pillow and Rigol DS1104Z (a fully upgraded DS1054Z oscilloscope).
+Tested with Linux Ubuntu 16.04.1, Python 2.7.12 and pillow.
 
 
 User Manual:
 -----------
-Usage:
-
-    python OscScreenGrabLAN.py png|bmp|csv [oscilloscope_IP [save_path]]
-
-Usage examples:
-
-    python OscScreenGrabLAN.py png
-    python OscScreenGrabLAN.py csv 192.168.1.3
-
-The following usage case is not yet implemented:
-
-    python OscScreenGrabLAN.py bmp 192.168.1.3 my_place_for_captures
-
 This program captures either the waveform or the whole screen
     of a Rigol DS1000Z series oscilloscope, then save it on the computer
     as a CSV, PNG or BMP file with a timestamp in the file name.
@@ -41,31 +27,45 @@ This program captures either the waveform or the whole screen
     USB and/or GPIB connections are not used by this software.
 
     No VISA, IVI or Rigol drivers are needed.
+	
+Installation:
 
+    Installation on a clean Windows 10 machine
+	    1. download and install Python 2.7.12 from https://www.python.org/downloads/
+		2. to install pillow, open a Command Prompt and type
+		    pip install pillow
+		3. download and unzip 'DS1054Z_screen_capture-master.zip' from https://github.com/RoGeorge/DS1054Z_screen_capture
+		4. connect the oscilloscope to the LAN (in this example, the oscilloscope have fix IP=192.168.1.3)
+		5. in the Command Prompt, change the directory (CD) to the path were 'OscScreenGrabLAN.py' was un-zipped
+		    cd path_where_the_OscScreenGrabLAN.py_was_unzipped
+		6. to run the OscScreenGrabLAN.py in the Command Prompt, type
+		    python OscScreenGrabLAN.py png 192.168.1.3
+			
+	Installation on a clean Ubuntu 16.04.1
+	    1. Python is already installed in Ubuntu 16.04.1 desktop
+	    2. to install pillow, open a Terminal and type:
+		    sudo add-apt-repository universe
+			sudo apt-get update
+			sudo apt-get install python-pip
+			pip install pillow
+		3. download and unzip 'DS1054Z_screen_capture-master.zip' from https://github.com/RoGeorge/DS1054Z_screen_capture
+		4. connect the oscilloscope to the LAN (in this example, the oscilloscope have fix IP=192.168.1.3)
+		5. in the Terminal, change the directory (CD) to the path were 'OscScreenGrabLAN.py' was un-zipped
+		    cd path_where_the_OscScreenGrabLAN.py_was_unzipped
+		6. to run the OscScreenGrabLAN.py in the Terminal, type
+		    python OscScreenGrabLAN.py png 192.168.1.3			
+	
+Other usages syntax:
 
-Windows Usage:
--------------
-Install Python 2.7.9 from https://www.python.org/downloads.
-Install "Python Imaging Library 1.1.7 for Python 2.7" from http://www.pythonware.com/products/pil.
-Run the PIL (Python Imaging Library) installer as Administrator, otherwise it won't be installed properly.
-Connect together the computer and the oscilloscope (by LAN).
-In order to capture an image from the oscilloscope display and save it to the computer disk,
-open a Command Prompt as Administrator and run "OscScreenGrabLAN.py".
+    python OscScreenGrabLAN.py png|bmp|csv oscilloscope_IP
 
-Example:
-
-    C:\Python27\python.exe OscScreenGrabLAN.py png 192.168.1.3
-    C:\Python27\python.exe OscScreenGrabLAN.py csv 192.168.1.3
-    
-Linux Usage:
------------
-Python and PIL are already present in the default Debian 7.7.0 installation, 
-so it is not necessary to manually install them.
-Connect together the computer and the oscilloscope (by LAN), download the project from GitHub, open a Terminal, 
-go to the project's directory and run "OscScreenGrabLAN.py". 
-
-Example:
+Usage examples:
 
     python OscScreenGrabLAN.py png 192.168.1.3
     python OscScreenGrabLAN.py csv 192.168.1.3
+
+
+
+
+
     

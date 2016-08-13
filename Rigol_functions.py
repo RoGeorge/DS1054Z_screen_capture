@@ -46,16 +46,16 @@ def is_waveform_from_to(tn, n1_d, n2_d):
 	elif n2_d < n1_c:
 		# first set n1_d then set n2_d
 		tn.write("WAV:STAR " + str(n1_d))
-		time.sleep(0.3)
+		time.sleep(1)
 		tn.write("WAV:STOP " + str(n2_d))
-		time.sleep(0.3)
+		time.sleep(1)
 
 	else:
 		# first set n2_d then set n1_d
 		tn.write("WAV:STOP " + str(n2_d))
-		time.sleep(0.3)
+		time.sleep(1)
 		tn.write("WAV:STAR " + str(n1_d))
-		time.sleep(0.3)
+		time.sleep(1)
 
 	# read achieved n2
 	tn.write("WAV:STOP?")
