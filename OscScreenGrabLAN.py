@@ -25,7 +25,7 @@ import os
 import platform
 
 # Update the next lines for your own default settings:
-path_to_save = ""
+path_to_save = "captures/"
 save_format = "PNG"
 IP_DS1104Z = "192.168.1.3"
 
