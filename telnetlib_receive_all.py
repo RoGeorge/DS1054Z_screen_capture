@@ -1,4 +1,4 @@
-# This whole file is a copy of the 'telnetlib.py' that came with Python 2.7.9 distribution.
+# This whole file is a copy of the 'telnetlib.py' that came with Python 2.7.12 distribution.
 # A patch was applied to this file, in order to stop dropping null (0x00) characters.
 
 r"""TELNET client class.
@@ -257,12 +257,13 @@ class Telnet:
 
     def close(self):
         """Close the connection."""
-        if self.sock:
-            self.sock.close()
+        sock = self.sock
         self.sock = 0
         self.eof = 1
         self.iacseq = ''
         self.sb = 0
+        if sock:
+            sock.close()
 
     def get_socket(self):
         """Return the socket object used internally."""
