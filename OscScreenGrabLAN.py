@@ -78,6 +78,8 @@ if len(sys.argv) <= 1:
 elif sys.argv[1].lower() not in ["png", "bmp", "csv"]:
     print_help()
     print "This file type is not supported: ", sys.argv[1]
+    print
+    print_running_Python_versions()
     sys.exit("ERROR")
 
 file_format = sys.argv[1].lower()
@@ -112,6 +114,8 @@ if instrument_id == "command error":
     print instrument_id
     print "Check the oscilloscope settings."
     print "Utility -> IO Setting -> RemoteIO -> LAN must be ON"
+    print
+    print_running_Python_versions()
     sys.exit("ERROR")
 
 # Check if instrument is indeed a Rigol DS1000Z series
@@ -120,6 +124,8 @@ if (id_fields[company] != "RIGOL TECHNOLOGIES") or \
         (id_fields[model][:3] != "DS1") or (id_fields[model][-1] != "Z"):
     print
     print "ERROR: No Rigol from series DS1000Z found at ", IP_DS1104Z
+    print
+    print_running_Python_versions()
     sys.exit("ERROR")
 
 print "Instrument ID:",
@@ -207,6 +213,8 @@ elif file_format == "csv":
             if stop_point == 0:
                 data_available = False
                 print "ERROR: Stop data point index lower then start data point index"
+                print
+                print_running_Python_versions()
                 sys.exit("ERROR")
             elif stop_point < n1:
                 break
