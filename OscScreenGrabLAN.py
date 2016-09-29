@@ -44,7 +44,10 @@ __author__ = 'RoGeorge'
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s',
                     filename=os.path.basename(sys.argv[0]) + '.log')
+logging.info("New run started...")
 logging.info("Log message: INFO level set.")
+
+log_running_Python_versions()
 
 # Update the next lines for your own default settings:
 path_to_save = "captures/"
@@ -70,7 +73,6 @@ script_name = os.path.basename(sys.argv[0])
 
 
 def print_help():
-    # Print usage
     print
     print "Usage:"
     print "    " + "python " + script_name + " png|bmp|csv [oscilloscope_IP [save_path]]"
@@ -100,8 +102,6 @@ if len(sys.argv) <= 1:
 elif sys.argv[1].lower() not in ["png", "bmp", "csv"]:
     print_help()
     print "This file type is not supported: ", sys.argv[1]
-    print
-    print_running_Python_versions()
     sys.exit("ERROR")
 
 file_format = sys.argv[1].lower()
@@ -132,21 +132,17 @@ instrument_id = command(tn, "*idn?")    # ask for instrument ID
 
 # Check if instrument is set to accept LAN commands
 if instrument_id == "command error":
-    print instrument_id
+    print "Instrument reply:", instrument_id
     print "Check the oscilloscope settings."
     print "Utility -> IO Setting -> RemoteIO -> LAN must be ON"
-    print
-    print_running_Python_versions()
     sys.exit("ERROR")
 
 # Check if instrument is indeed a Rigol DS1000Z series
 id_fields = instrument_id.split(",")
 if (id_fields[company] != "RIGOL TECHNOLOGIES") or \
         (id_fields[model][:3] != "DS1") or (id_fields[model][-1] != "Z"):
-    print
+    print "Found instrument model", id_fields[model], "instead of expected model, DS1*Z"
     print "ERROR: No Rigol from series DS1000Z found at ", IP_DS1104Z
-    print
-    print_running_Python_versions()
     sys.exit("ERROR")
 
 print "Instrument ID:",
@@ -199,8 +195,6 @@ elif file_format == "csv":
         if response == '1':
             channel_list += [channel]
 
-    print "Active channels on the display:", channel_list
-
     csv_buff = ""
     depth = get_memory_depth(tn)
 
@@ -224,25 +218,15 @@ elif file_format == "csv":
         # if you get on the oscilloscope screen the error message
         # "Memory lack in waveform reading!", then decrease max_chunk value
         max_chunk = 100000      # tested for DS1104Z
-        print "max_chunk=", max_chunk
-        print "depth=", depth
-        print "max_chunk > depth:", max_chunk > depth
         if max_chunk > depth:
             max_chunk = depth
 
-        print "max_chunk=", max_chunk
         n1 = 1
         n2 = max_chunk
-        print "n2=", n2
         while data_available:
             display_n1 = n1
-            print
-            print "n1=", n1
-            print "n2=", n2
             stop_point = is_waveform_from_to(tn, n1, n2)
-            print "stop_point=", stop_point
             if stop_point == 0:
-                print_running_Python_versions()
                 logging.error("ERROR: Stop data point index is Zero while available data is True.")
                 sys.exit("ERROR")
             elif stop_point < n1:

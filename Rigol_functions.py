@@ -6,17 +6,14 @@ import sys
 import logging
 
 
-def print_running_Python_versions():
-    print "Running Python version:"
-    print (sys.version)  # parentheses necessary in python 3.
-    print sys.version_info
-    print
+def log_running_Python_versions():
+    logging.info("***** Running Python version:")
+    logging.info(str(sys.version) + ", " + str(sys.version_info))         # parentheses required in python 3.
+    logging.info(sys.version_info)
 
     installed_packages = pip.get_installed_distributions()
     installed_packages_list = sorted(["%s==%s" % (i.key, i.version) for i in installed_packages])
-    print "Installed Python modules:"
-    print(installed_packages_list)
-    print
+    logging.info("Installed Python modules:" + str(installed_packages_list))
 
 
 def command(tn, SCPI):
@@ -75,13 +72,11 @@ def is_waveform_from_to(tn, n1_d, n2_d):
     elif n2_d < n1_c:
         # first set n1_d then set n2_d
 
-        print "a ", "n1_d=", n1_d, "n2_d=", n2_d
         command(tn, "WAV:STAR " + str(n1_d))
         command(tn, "WAV:STOP " + str(n2_d))
 
     else:
         # first set n2_d then set n1_d
-        print "b ", "n2_d", n2_d, "n1_d=", n1_d
         command(tn, "WAV:STOP " + str(n2_d))
         command(tn, "WAV:STAR " + str(n1_d))
 
