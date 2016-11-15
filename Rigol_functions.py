@@ -49,7 +49,7 @@ def get_memory_depth(tn):
         scal = command(tn, "TIM:SCAL?")
 
         # mdep = h_grid * scal * srate
-        mdep = h_grid * scal * srate
+        mdep = float(h_grid) * float(scal) * float(srate)
 
     # return mdep
     return int(mdep)
