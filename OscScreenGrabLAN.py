@@ -10,26 +10,30 @@ import os
 import platform
 import logging
 
-__version__ = 'v1.0.0'
+__version__ = 'v1.1.0'
+# Added TMC Blockheader decoding
+# Added possibility to manually allow run for scopes other then DS1000Z
 __author__ = 'RoGeorge'
 
 #
-# TODO: Replace the fixed delay between commands with *OPC? (Operation Complete) query
-# TODO: Add debug mode
-# TODO: Add debug switch
-# TODO: Add Python and modules version
-# TODO: Add script version
-# TODO: Add message for csv data points: mdep (all) or 1200 (screen), depending on RUN/STOP state, MATH and WAV:MODE
-# TODO: Clarify info, warning, error, debug and print messages
-# TODO: Remove debugging print lines
-# TODO: Add .gitignore
+# TODO: Write all SCPI commands in their short name, with capitals
+# TODO: Add ignore instrument model switch instead of asking
 #
-
-"""
-# TODO: Use "waveform:data?" multiple times to extract the whole 12M points
-          in order to overcome the "Memory lack in waveform reading!" screen message
-"""
-# TODO: Detect if the osc is in RUN or in STOP mode (looking at the length of data extracted)
+# TODO: Detect if the scope is in RUN or in STOP mode (looking at the length of data extracted)
+# TODO: Add logic for 1200/mdep points to avoid displaying the 'Invalid Input!' message
+# TODO: Add message for csv data points: mdep (all) or 1200 (screen), depending on RUN/STOP state, MATH and WAV:MODE
+# TODO: Add STOP scope switch
+#
+# TODO: Add debug switch
+# TODO: Clarify info, warning, error, debug and print messages
+#
+# TODO: Add automated version increase
+#
+# TODO: Extract all memory datapoints. For the moment, CSV is limited to the displayed 1200 datapoints.
+# TODO: Use arrays instead of strings and lists for csv mode.
+#
+# TODO: variables/functions name refactoring
+# TODO: Fine tune maximum chunk size request
 # TODO: Investigate scaling. Sometimes 3.0e-008 instead of expected 3.0e-000
 # TODO: Add timestamp and mark the trigger point as t0
 # TODO: Use channels label instead of chan1, chan2, chan3, chan4, math
@@ -43,11 +47,12 @@ __author__ = 'RoGeorge'
 # Set the desired logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s',
-                    filename=os.path.basename(sys.argv[0]) + '.log')
-logging.info("New run started...")
-logging.info("Log message: INFO level set.")
+                    filename=os.path.basename(sys.argv[0]) + '.log',
+                    filemode='w')
 
-log_running_Python_versions()
+logging.info("***** New run started...")
+logging.info("OS Platform: " + str(platform.uname()))
+log_running_python_versions()
 
 # Update the next lines for your own default settings:
 path_to_save = "captures/"
@@ -57,12 +62,8 @@ IP_DS1104Z = "192.168.1.3"
 # Rigol/LXI specific constants
 port = 5555
 
-expected_len = 1152068
-TMC_header_len = 11
-terminator_len = 3
-
 big_wait = 10
-small_wait = 1
+smallWait = 1
 
 company = 0
 model = 1
@@ -110,8 +111,6 @@ file_format = sys.argv[1].lower()
 if len(sys.argv) > 1:
     IP_DS1104Z = sys.argv[2]
 
-# Create/check if 'path' exists
-
 # Check network response (ping)
 if platform.system() == "Windows":
     response = os.system("ping -n 1 " + IP_DS1104Z + " > nul")
@@ -120,7 +119,7 @@ else:
 
 if response != 0:
     print
-    print "No response pinging " + IP_DS1104Z
+    print "WARNING! No response pinging " + IP_DS1104Z
     print "Check network cables and settings."
     print "You should be able to ping the oscilloscope."
 
@@ -128,7 +127,7 @@ if response != 0:
 # The default telnetlib drops 0x00 characters,
 #   so a modified library 'telnetlib_receive_all' is used instead
 tn = Telnet(IP_DS1104Z, port)
-instrument_id = command(tn, "*idn?")    # ask for instrument ID
+instrument_id = command(tn, "*IDN?")    # ask for instrument ID
 
 # Check if instrument is set to accept LAN commands
 if instrument_id == "command error":
@@ -141,9 +140,12 @@ if instrument_id == "command error":
 id_fields = instrument_id.split(",")
 if (id_fields[company] != "RIGOL TECHNOLOGIES") or \
         (id_fields[model][:3] != "DS1") or (id_fields[model][-1] != "Z"):
-    print "Found instrument model", id_fields[model], "instead of expected model, DS1*Z"
-    print "ERROR: No Rigol from series DS1000Z found at ", IP_DS1104Z
-    sys.exit("ERROR")
+    print "Found instrument model", "'" + id_fields[model] + "'", "from", "'" + id_fields[company] + "'"
+    print "WARNING: No Rigol from series DS1000Z found at", IP_DS1104Z
+    print
+    typed = raw_input("ARE YOU SURE YOU WANT TO CONTINUE? (No/Yes):")
+    if typed != 'Yes':
+        sys.exit('Nothing done. Bye!')
 
 print "Instrument ID:",
 print instrument_id
@@ -155,120 +157,101 @@ filename = path_to_save + id_fields[model] + "_" + id_fields[serial] + "_" + tim
 if file_format in ["png", "bmp"]:
     # Ask for an oscilloscope display print screen
     print "Receiving screen capture..."
-    buff = command(tn, "display:data?")
+    buff = command(tn, ":DISP:DATA?")
 
-    # Just in case the transfer did not complete in the expected time
-    while len(buff) < expected_len:
+    expectedBuffLen = expected_buff_bytes(buff)
+    # Just in case the transfer did not complete in the expected time, read the remaining 'buff' chunks
+    while len(buff) < expectedBuffLen:
         logging.warning("Received LESS data then expected! (" +
-                        str(len(buff)) + " out of " + str(expected_len) + " expected raw BMP bytes.)")
-        tmp = tn.read_until("\n", small_wait)
+                        str(len(buff)) + " out of " + str(expectedBuffLen) + " expected 'buff' bytes.)")
+        tmp = tn.read_until("\n", smallWait)
         if len(tmp) == 0:
             break
         buff += tmp
         logging.warning(str(len(tmp)) + " leftover bytes added to 'buff'.")
 
-    if len(buff) < expected_len:
-        logging.error("Received LESS data then expected! (" +
-                      str(len(buff)) + " out of " + str(expected_len) + " expected raw BMP bytes.)")
+    if len(buff) < expectedBuffLen:
+        logging.error("After reading all data chunks, 'buff' is still shorter then expected! (" +
+                      str(len(buff)) + " out of " + str(expectedBuffLen) + " expected 'buff' bytes.)")
         sys.exit("ERROR")
 
-    # Strip TMC Blockheader and terminator bytes
-    buff = buff[TMC_header_len:-terminator_len]
+    # Strip TMC Blockheader and keep only the data
+    tmcHeaderLen = tmc_header_bytes(buff)
+    expectedDataLen = expected_data_bytes(buff)
+    buff = buff[tmcHeaderLen: tmcHeaderLen+expectedDataLen]
 
     # Save as PNG or BMP according to file_format
     im = Image.open(StringIO.StringIO(buff))
     im.save(filename + "." + file_format, file_format)
-    print "Saved file:", filename + "." + file_format
+    print "Saved file:", "'" + filename + "." + file_format + "'"
 
+# TODO: Change WAV:FORM from ASC to BYTE
 elif file_format == "csv":
-    # Put osc in STOP mode
+    # Put the scope in STOP mode - for the moment, deal with it by manually stopping the scope
+    # TODO: Add command line switch and code logic for 1200 vs ALL memory data points
     # tn.write("stop")
     # response = tn.read_until("\n", 1)
 
     # Scan for displayed channels
-    channel_list = []
-    for channel in ["chan1", "chan2", "chan3", "chan4", "math"]:
-        response = command(tn, channel + ":display?")
+    chanList = []
+    for channel in ["CHAN1", "CHAN2", "CHAN3", "CHAN4", "MATH"]:
+        response = command(tn, ":" + channel + ":DISP?")
 
-        # Strip '\n' terminator
-        response = response[:-1]
-        if response == '1':
-            channel_list += [channel]
+        # If channel is active
+        if response == '1\n':
+            chanList += [channel]
+
+    # the meaning of 'max' is   - will read only the displayed data when the scope is in RUN mode,
+    #                             or when the MATH channel is selected
+    #                           - will read all the acquired data points when the scope is in STOP mode
+    # TODO: Change mode to MAX
+    # TODO: Add command line switch for MAX/NORM
+    command(tn, ":WAV:MODE NORM")
+    command(tn, ":WAV:STAR 0")
+    command(tn, ":WAV:MODE NORM")
 
     csv_buff = ""
-    depth = get_memory_depth(tn)
 
     # for each active channel
-    for channel in channel_list:
+    for channel in chanList:
         print
 
         # Set WAVE parameters
-        command(tn, "waveform:source " + channel)
-        command(tn, "waveform:form asc")
+        command(tn, ":WAV:SOUR " + channel)
+        command(tn, ":WAV:FORM ASC")
 
-        # Maximum = only displayed data when osc. in RUN mode, or full memory data when STOPed
-        # Always ONLY displayed data (1200 points) if MATH channel is selected
-        command(tn, "waveform:mode max")
+        # MATH channel does not allow START and STOP to be set. They are always 0 and 1200
+        if channel != "MATH":
+            command(tn, ":WAV:STAR 1")
+            command(tn, ":WAV:STOP 1200")
 
-        # Get all possible data
         buff = ""
-        data_available = True
+        print "Data from channel '" + str(channel) + "', points " + str(1) + "-" + str(1200) + ": Receiving..."
+        buffChunk = command(tn, ":WAV:DATA?")
 
-        # max_chunk is dependent of the wav:mode and the oscilloscope type
-        # if you get on the oscilloscope screen the error message
-        # "Memory lack in waveform reading!", then decrease max_chunk value
-        max_chunk = 100000      # tested for DS1104Z
-        if max_chunk > depth:
-            max_chunk = depth
+        # Just in case the transfer did not complete in the expected time
+        while buffChunk[-1] != "\n":
+            logging.warning("The data transfer did not complete in the expected time of " +
+                            str(smallWait) + " second(s).")
 
-        n1 = 1
-        n2 = max_chunk
-        while data_available:
-            display_n1 = n1
-            stop_point = is_waveform_from_to(tn, n1, n2)
-            if stop_point == 0:
-                logging.error("ERROR: Stop data point index is Zero while available data is True.")
-                sys.exit("ERROR")
-            elif stop_point < n1:
+            tmp = tn.read_until("\n", smallWait)
+            if len(tmp) == 0:
                 break
-            elif stop_point < n2:
-                n2 = stop_point
-                is_waveform_from_to(tn, n1, n2)
-                data_available = False
-            else:
-                data_available = True
-                n1 = n2 + 1
-                n2 += max_chunk
+            buffChunk += tmp
+            logging.warning(str(len(tmp)) + " leftover bytes added to 'buff_chunks'.")
 
-            print "Data from channel '" + str(channel) + "', points " +\
-                  str(display_n1) + "-" + str(stop_point) + ": Receiving..."
-            buff_chunks = command(tn, "waveform:data?")
+        # Append data chunks
+        # Strip TMC Blockheader and terminator bytes
+        buff += buffChunk[tmc_header_bytes(buffChunk):-1] + ","
 
-            # Just in case the transfer did not complete in the expected time
-            while buff_chunks[-1] != "\n":
-                logging.warning("The data transfer did not complete in the expected time of " +
-                                str(small_wait) + " second(s).")
-
-                tmp = tn.read_until("\n", small_wait)
-                if len(tmp) == 0:
-                    break
-                buff_chunks += tmp
-                logging.warning(str(len(tmp)) + " leftover bytes added to 'buff_chunks'.")
-
-            # Append data chunks
-            # Strip TMC Blockheader and terminator bytes
-            buff += buff_chunks[TMC_header_len:-1] + ","
-
+        # Strip the last \n char
         buff = buff[:-1]
 
-        # Append each value to csv_buff
-
         # Process data
-
         buff_list = buff.split(",")
         buff_rows = len(buff_list)
 
-        # Put red data into csv_buff
+        # Put read data into csv_buff
         csv_buff_list = csv_buff.split(os.linesep)
         csv_rows = len(csv_buff_list)
 
@@ -295,6 +278,6 @@ elif file_format == "csv":
     scr_file.write(csv_buff)
     scr_file.close()
 
-    print "Saved file: '", filename + "." + file_format + "'"
+    print "Saved file:", "'" + filename + "." + file_format + "'"
 
 tn.close()
