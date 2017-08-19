@@ -14,6 +14,7 @@ Python 2 is required. Python 3 is not supported.
 
 Tested with Windows 10, Python 2.7.12, pillow and Rigol DS1104Z (a fully upgraded DS1054Z oscilloscope).
 Tested with Linux Ubuntu 16.04.1, Python 2.7.12 and pillow.
+Tested with Mac OS 10.12.5, Python 2.7.12
 
 
 User Manual:
