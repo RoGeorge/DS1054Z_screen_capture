@@ -1,4 +1,5 @@
-import pip
+#import pip
+import pkg_resources
 import sys
 import logging
 
@@ -7,9 +8,10 @@ __author__ = 'RoGeorge'
 
 def log_running_python_versions():
     logging.info("Python version: " + str(sys.version) + ", " + str(sys.version_info))  # () required in Python 3.
-
-    installed_packages = pip.get_installed_distributions()
-    installed_packages_list = sorted(["%s==%s" % (i.key, i.version) for i in installed_packages])
+    
+    installed_packages = [d for d in pkg_resources.working_set]
+    installed_packages_ll = [ (x[0],x[1]) for x in (str(d).split() for d in installed_packages) ]
+    installed_packages_list = sorted(["%s==%s" % ( i[0], i[1] ) for i in installed_packages_ll])
     logging.info("Installed Python modules: " + str(installed_packages_list))
 
 
