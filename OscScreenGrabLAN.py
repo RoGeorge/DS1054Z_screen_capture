@@ -110,6 +110,8 @@ file_format = sys.argv[1].lower()
 # Read IP
 if len(sys.argv) > 1:
     IP_DS1104Z = sys.argv[2]
+if len(sys.argv) > 2:
+	path_to_save = sys.argv[3].strip("/") + "/"
 
 # Check network response (ping)
 if platform.system() == "Windows":
