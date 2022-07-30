@@ -22,7 +22,7 @@ Note that read_all() won't read until eof -- it just reads some data
 
 It is possible to pass a Telnet object to select.select() in order to
 wait until more data is available.  Note that in this case,
-read_eager() may return '' even if there was data on the socket,
+read_eager() may return b'' even if there was data on the socket,
 because the protocol negotiation may have eaten the data.  This is why
 EOFError is needed in some cases to distinguish between "no data" and
 "connection closed" (since the socket also appears ready for reading
@@ -51,87 +51,87 @@ DEBUGLEVEL = 0
 TELNET_PORT = 23
 
 # Telnet protocol characters (don't change)
-IAC  = chr(255) # "Interpret As Command"
-DONT = chr(254)
-DO   = chr(253)
-WONT = chr(252)
-WILL = chr(251)
-theNULL = chr(0)
+IAC  = bytes([255]) # "Interpret As Command"
+DONT = bytes([254])
+DO   = bytes([253])
+WONT = bytes([252])
+WILL = bytes([251])
+theNULL = bytes([0])
 
-SE  = chr(240)  # Subnegotiation End
-NOP = chr(241)  # No Operation
-DM  = chr(242)  # Data Mark
-BRK = chr(243)  # Break
-IP  = chr(244)  # Interrupt process
-AO  = chr(245)  # Abort output
-AYT = chr(246)  # Are You There
-EC  = chr(247)  # Erase Character
-EL  = chr(248)  # Erase Line
-GA  = chr(249)  # Go Ahead
-SB =  chr(250)  # Subnegotiation Begin
+SE  = bytes([240])  # Subnegotiation End
+NOP = bytes([241])  # No Operation
+DM  = bytes([242])  # Data Mark
+BRK = bytes([243])  # Break
+IP  = bytes([244])  # Interrupt process
+AO  = bytes([245])  # Abort output
+AYT = bytes([246])  # Are You There
+EC  = bytes([247])  # Erase Character
+EL  = bytes([248])  # Erase Line
+GA  = bytes([249])  # Go Ahead
+SB =  bytes([250])  # Subnegotiation Begin
 
 
 # Telnet protocol options code (don't change)
 # These ones all come from arpa/telnet.h
-BINARY = chr(0) # 8-bit data path
-ECHO = chr(1) # echo
-RCP = chr(2) # prepare to reconnect
-SGA = chr(3) # suppress go ahead
-NAMS = chr(4) # approximate message size
-STATUS = chr(5) # give status
-TM = chr(6) # timing mark
-RCTE = chr(7) # remote controlled transmission and echo
-NAOL = chr(8) # negotiate about output line width
-NAOP = chr(9) # negotiate about output page size
-NAOCRD = chr(10) # negotiate about CR disposition
-NAOHTS = chr(11) # negotiate about horizontal tabstops
-NAOHTD = chr(12) # negotiate about horizontal tab disposition
-NAOFFD = chr(13) # negotiate about formfeed disposition
-NAOVTS = chr(14) # negotiate about vertical tab stops
-NAOVTD = chr(15) # negotiate about vertical tab disposition
-NAOLFD = chr(16) # negotiate about output LF disposition
-XASCII = chr(17) # extended ascii character set
-LOGOUT = chr(18) # force logout
-BM = chr(19) # byte macro
-DET = chr(20) # data entry terminal
-SUPDUP = chr(21) # supdup protocol
-SUPDUPOUTPUT = chr(22) # supdup output
-SNDLOC = chr(23) # send location
-TTYPE = chr(24) # terminal type
-EOR = chr(25) # end or record
-TUID = chr(26) # TACACS user identification
-OUTMRK = chr(27) # output marking
-TTYLOC = chr(28) # terminal location number
-VT3270REGIME = chr(29) # 3270 regime
-X3PAD = chr(30) # X.3 PAD
-NAWS = chr(31) # window size
-TSPEED = chr(32) # terminal speed
-LFLOW = chr(33) # remote flow control
-LINEMODE = chr(34) # Linemode option
-XDISPLOC = chr(35) # X Display Location
-OLD_ENVIRON = chr(36) # Old - Environment variables
-AUTHENTICATION = chr(37) # Authenticate
-ENCRYPT = chr(38) # Encryption option
-NEW_ENVIRON = chr(39) # New - Environment variables
+BINARY = bytes([0]) # 8-bit data path
+ECHO = bytes([1]) # echo
+RCP = bytes([2]) # prepare to reconnect
+SGA = bytes([3]) # suppress go ahead
+NAMS = bytes([4]) # approximate message size
+STATUS = bytes([5]) # give status
+TM = bytes([6]) # timing mark
+RCTE = bytes([7]) # remote controlled transmission and echo
+NAOL = bytes([8]) # negotiate about output line width
+NAOP = bytes([9]) # negotiate about output page size
+NAOCRD = bytes([10]) # negotiate about CR disposition
+NAOHTS = bytes([11]) # negotiate about horizontal tabstops
+NAOHTD = bytes([12]) # negotiate about horizontal tab disposition
+NAOFFD = bytes([13]) # negotiate about formfeed disposition
+NAOVTS = bytes([14]) # negotiate about vertical tab stops
+NAOVTD = bytes([15]) # negotiate about vertical tab disposition
+NAOLFD = bytes([16]) # negotiate about output LF disposition
+XASCII = bytes([17]) # extended ascii character set
+LOGOUT = bytes([18]) # force logout
+BM = bytes([19]) # byte macro
+DET = bytes([20]) # data entry terminal
+SUPDUP = bytes([21]) # supdup protocol
+SUPDUPOUTPUT = bytes([22]) # supdup output
+SNDLOC = bytes([23]) # send location
+TTYPE = bytes([24]) # terminal type
+EOR = bytes([25]) # end or record
+TUID = bytes([26]) # TACACS user identification
+OUTMRK = bytes([27]) # output marking
+TTYLOC = bytes([28]) # terminal location number
+VT3270REGIME = bytes([29]) # 3270 regime
+X3PAD = bytes([30]) # X.3 PAD
+NAWS = bytes([31]) # window size
+TSPEED = bytes([32]) # terminal speed
+LFLOW = bytes([33]) # remote flow control
+LINEMODE = bytes([34]) # Linemode option
+XDISPLOC = bytes([35]) # X Display Location
+OLD_ENVIRON = bytes([36]) # Old - Environment variables
+AUTHENTICATION = bytes([37]) # Authenticate
+ENCRYPT = bytes([38]) # Encryption option
+NEW_ENVIRON = bytes([39]) # New - Environment variables
 # the following ones come from
 # http://www.iana.org/assignments/telnet-options
 # Unfortunately, that document does not assign identifiers
 # to all of them, so we are making them up
-TN3270E = chr(40) # TN3270E
-XAUTH = chr(41) # XAUTH
-CHARSET = chr(42) # CHARSET
-RSP = chr(43) # Telnet Remote Serial Port
-COM_PORT_OPTION = chr(44) # Com Port Control Option
-SUPPRESS_LOCAL_ECHO = chr(45) # Telnet Suppress Local Echo
-TLS = chr(46) # Telnet Start TLS
-KERMIT = chr(47) # KERMIT
-SEND_URL = chr(48) # SEND-URL
-FORWARD_X = chr(49) # FORWARD_X
-PRAGMA_LOGON = chr(138) # TELOPT PRAGMA LOGON
-SSPI_LOGON = chr(139) # TELOPT SSPI LOGON
-PRAGMA_HEARTBEAT = chr(140) # TELOPT PRAGMA HEARTBEAT
-EXOPL = chr(255) # Extended-Options-List
-NOOPT = chr(0)
+TN3270E = bytes([40]) # TN3270E
+XAUTH = bytes([41]) # XAUTH
+CHARSET = bytes([42]) # CHARSET
+RSP = bytes([43]) # Telnet Remote Serial Port
+COM_PORT_OPTION = bytes([44]) # Com Port Control Option
+SUPPRESS_LOCAL_ECHO = bytes([45]) # Telnet Suppress Local Echo
+TLS = bytes([46]) # Telnet Start TLS
+KERMIT = bytes([47]) # KERMIT
+SEND_URL = bytes([48]) # SEND-URL
+FORWARD_X = bytes([49]) # FORWARD_X
+PRAGMA_LOGON = bytes([138]) # TELOPT PRAGMA LOGON
+SSPI_LOGON = bytes([139]) # TELOPT SSPI LOGON
+PRAGMA_HEARTBEAT = bytes([140]) # TELOPT PRAGMA HEARTBEAT
+EXOPL = bytes([255]) # Extended-Options-List
+NOOPT = bytes([0])
 
 class Telnet:
 
@@ -183,7 +183,7 @@ class Telnet:
         Each time a telnet option is read on the input flow, this callback
         (if set) is called with the following parameters :
         callback(telnet socket, command, option)
-            option will be chr(0) when there is no option.
+            option will be bytes([0]) when there is no option.
         No other action is done afterwards by telnetlib.
 
     """
@@ -201,13 +201,13 @@ class Telnet:
         self.port = port
         self.timeout = timeout
         self.sock = None
-        self.rawq = ''
+        self.rawq = b''
         self.irawq = 0
-        self.cookedq = ''
+        self.cookedq = b''
         self.eof = 0
-        self.iacseq = '' # Buffer for IAC sequence.
+        self.iacseq = b'' # Buffer for IAC sequence.
         self.sb = 0 # flag for SB and SE sequence.
-        self.sbdataq = ''
+        self.sbdataq = b''
         self.option_callback = None
         self._has_poll = hasattr(select, 'poll')
         if host is not None:
@@ -241,11 +241,7 @@ class Telnet:
 
         """
         if self.debuglevel > 0:
-            print 'Telnet(%s,%s):' % (self.host, self.port),
-            if args:
-                print msg % args
-            else:
-                print msg
+            print(('Telnet(%s,%s):' % (self.host, self.port)) + (msg % args if args else msg))
 
     def set_debuglevel(self, debuglevel):
         """Set the debug level.
@@ -260,7 +256,7 @@ class Telnet:
         sock = self.sock
         self.sock = 0
         self.eof = 1
-        self.iacseq = ''
+        self.iacseq = b''
         self.sb = 0
         if sock:
             sock.close()
@@ -388,13 +384,13 @@ class Telnet:
             self.fill_rawq()
             self.process_rawq()
         buf = self.cookedq
-        self.cookedq = ''
+        self.cookedq = b''
         return buf
 
     def read_some(self):
         """Read at least one byte of cooked data unless EOF is hit.
 
-        Return '' if EOF is hit.  Block if no data is immediately
+        Return b'' if EOF is hit.  Block if no data is immediately
         available.
 
         """
@@ -403,14 +399,14 @@ class Telnet:
             self.fill_rawq()
             self.process_rawq()
         buf = self.cookedq
-        self.cookedq = ''
+        self.cookedq = b''
         return buf
 
     def read_very_eager(self):
         """Read everything that's possible without blocking in I/O (eager).
 
         Raise EOFError if connection closed and no cooked data
-        available.  Return '' if no cooked data available otherwise.
+        available.  Return b'' if no cooked data available otherwise.
         Don't block unless in the midst of an IAC sequence.
 
         """
@@ -424,7 +420,7 @@ class Telnet:
         """Read readily available data.
 
         Raise EOFError if connection closed and no cooked data
-        available.  Return '' if no cooked data available otherwise.
+        available.  Return b'' if no cooked data available otherwise.
         Don't block unless in the midst of an IAC sequence.
 
         """
@@ -438,7 +434,7 @@ class Telnet:
         """Process and return data that's already in the queues (lazy).
 
         Raise EOFError if connection closed and no data available.
-        Return '' if no cooked data available otherwise.  Don't block
+        Return b'' if no cooked data available otherwise.  Don't block
         unless in the midst of an IAC sequence.
 
         """
@@ -449,25 +445,25 @@ class Telnet:
         """Return any data available in the cooked queue (very lazy).
 
         Raise EOFError if connection closed and no data available.
-        Return '' if no cooked data available otherwise.  Don't block.
+        Return b'' if no cooked data available otherwise.  Don't block.
 
         """
         buf = self.cookedq
-        self.cookedq = ''
+        self.cookedq = b''
         if not buf and self.eof and not self.rawq:
-            raise EOFError, 'telnet connection closed'
+            raise EOFError('telnet connection closed')
         return buf
 
     def read_sb_data(self):
         """Return any data available in the SB ... SE queue.
 
-        Return '' if no SB ... SE available. Should only be called
+        Return b'' if no SB ... SE available. Should only be called
         after seeing a SB or SE command. When a new SB command is
         found, old unread SB data will be discarded. Don't block.
 
         """
         buf = self.sbdataq
-        self.sbdataq = ''
+        self.sbdataq = b''
         return buf
 
     def set_option_negotiation_callback(self, callback):
@@ -481,10 +477,10 @@ class Telnet:
         the midst of an IAC sequence.
 
         """
-        buf = ['', '']
+        buf = [b'', b'']
         try:
             while self.rawq:
-                c = self.rawq_getchar()
+                c = bytes([self.rawq_getchar()])
                 if not self.iacseq:
                     #if c == theNULL:
                     #    continue
@@ -501,17 +497,17 @@ class Telnet:
                         self.iacseq += c
                         continue
 
-                    self.iacseq = ''
+                    self.iacseq = b''
                     if c == IAC:
                         buf[self.sb] = buf[self.sb] + c
                     else:
                         if c == SB: # SB ... SE start.
                             self.sb = 1
-                            self.sbdataq = ''
+                            self.sbdataq = b''
                         elif c == SE:
                             self.sb = 0
                             self.sbdataq = self.sbdataq + buf[1]
-                            buf[1] = ''
+                            buf[1] = b''
                         if self.option_callback:
                             # Callback is supposed to look into
                             # the sbdataq
@@ -523,7 +519,7 @@ class Telnet:
                             self.msg('IAC %d not recognized' % ord(c))
                 elif len(self.iacseq) == 2:
                     cmd = self.iacseq[1]
-                    self.iacseq = ''
+                    self.iacseq = b''
                     opt = c
                     if cmd in (DO, DONT):
                         self.msg('IAC %s %d',
@@ -540,7 +536,7 @@ class Telnet:
                         else:
                             self.sock.sendall(IAC + DONT + opt)
         except EOFError: # raised by self.rawq_getchar()
-            self.iacseq = '' # Reset on EOF
+            self.iacseq = b'' # Reset on EOF
             self.sb = 0
             pass
         self.cookedq = self.cookedq + buf[0]
@@ -560,7 +556,7 @@ class Telnet:
         c = self.rawq[self.irawq]
         self.irawq = self.irawq + 1
         if self.irawq >= len(self.rawq):
-            self.rawq = ''
+            self.rawq = b''
             self.irawq = 0
         return c
 
@@ -572,7 +568,7 @@ class Telnet:
 
         """
         if self.irawq >= len(self.rawq):
-            self.rawq = ''
+            self.rawq = b''
             self.irawq = 0
         # The buffer size should be fairly small so as to avoid quadratic
         # behavior in process_rawq() above
@@ -596,7 +592,7 @@ class Telnet:
                 try:
                     text = self.read_eager()
                 except EOFError:
-                    print '*** Connection closed by remote host ***'
+                    print('*** Connection closed by remote host ***')
                     break
                 if text:
                     sys.stdout.write(text)
@@ -609,8 +605,8 @@ class Telnet:
 
     def mt_interact(self):
         """Multithreaded version of interact()."""
-        import thread
-        thread.start_new_thread(self.listener, ())
+        import _thread
+        _thread.start_new_thread(self.listener, ())
         while 1:
             line = sys.stdin.readline()
             if not line:
@@ -623,7 +619,7 @@ class Telnet:
             try:
                 data = self.read_eager()
             except EOFError:
-                print '*** Connection closed by remote host ***'
+                print('*** Connection closed by remote host ***')
                 return
             if data:
                 sys.stdout.write(data)
@@ -664,7 +660,7 @@ class Telnet:
         """
         re = None
         expect_list = expect_list[:]
-        indices = range(len(expect_list))
+        indices = list(range(len(expect_list)))
         for i in indices:
             if not hasattr(expect_list[i], "search"):
                 if not re: import re
@@ -728,7 +724,7 @@ class Telnet:
         """
         re = None
         list = list[:]
-        indices = range(len(list))
+        indices = list(range(len(list)))
         for i in indices:
             if not hasattr(list[i], "search"):
                 if not re: import re
